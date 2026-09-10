@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Debate System · Multi-Agent Decision Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* ---- Dark theme (default) ---- */
+            --bg-base: #07090e;
+            --bg-surface: #0e131f;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --bg-card-hover: rgba(24, 33, 53, 0.85);
+            --bg-input: rgba(13, 19, 33, 0.85);
+            
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(99, 102, 241, 0.5);
+            
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-glow: rgba(99, 102, 241, 0.25);
+            
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-subtle: #6b7280;
+            --text-bright: #ffffff;
+            
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 26px;
+            
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(99, 102, 241, 0.08);
+        }
+
+        /* ---- Light theme ---- */
+        [data-theme="light"] {
+            --bg-base: #f2f6f4;
+            --bg-surface: #e8eee9;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: rgba(220, 235, 225, 0.9);
+            --bg-input: rgba(255, 255, 255, 0.9);
+            
+            --border-subtle: rgba(99, 102, 241, 0.2);
+            --border-focus: rgba(99, 102, 241, 0.6);
+            
+            --text-main: #1a1a2e;
+            --text-muted: #4a4a6a;
+            --text-subtle: #6b6b8d;
+            --text-bright: #0f0f1a;
+            
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(99, 102, 241, 0.08);
+        }
+
+        /* ---- System theme (follows OS preference) ---- */
+        @media (prefers-color-scheme: light) {
+            [data-theme="system"] {
+                --bg-base: #f2f6f4;
+                --bg-surface: #e8eee9;
+                --bg-card: rgba(255, 255, 255, 0.85);
+                --bg-card-hover: rgba(220, 235, 225, 0.9);
+                --bg-input: rgba(255, 255, 255, 0.9);
+                --border-subtle: rgba(99, 102, 241, 0.2);
+                --border-focus: rgba(99, 102, 241, 0.6);
+                --text-main: #1a1a2e;
+                --text-muted: #4a4a6a;
+                --text-subtle: #6b6b8d;
+                --text-bright: #0f0f1a;
+                --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(99, 102, 241, 0.08);
+            }
+        }
+
+        /* Theme toggle button */
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 5px 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-bright);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 100% 40%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 0% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 36px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        .brand-text h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .brand-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--text-subtle);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 5px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            flex-wrap: wrap;
+        }
+
+        .nav-tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 9px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-tab-btn:hover {
+            color: var(--text-bright);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        /* Container */
+        .main-container {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 36px 24px 60px;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            line-height: 1.25;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--text-bright) 30%, var(--primary-light) 70%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            color: var(--text-muted);
+            font-size: 0.98rem;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* Glass Card Base */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-lg);
+            padding: 36px 40px;
+            margin-bottom: 30px;
+        }
+
+        /* Question Input */
+        .input-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .input-label {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-label-icon {
+            color: var(--primary-light);
+        }
+
+        .param-toggle-btn {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .param-toggle-btn:hover {
+            background: rgba(99, 102, 241, 0.18);
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .query-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: var(--text-bright);
+            font-size: 1.02rem;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            outline: none;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        .query-input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+            background: var(--bg-surface);
+        }
+
+        .query-input::placeholder {
+            color: var(--text-subtle);
+            font-size: 0.95rem;
+        }
+
+        /* Preset Chips */
+        .preset-section {
+            margin-bottom: 22px;
+        }
+
+        .preset-header {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preset-header::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        .preset-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .preset-chip {
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .preset-chip:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.4);
+            color: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Collapsible Advanced Parameters */
+        .advanced-panel {
+            display: none;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            padding: 20px;
+            margin-bottom: 22px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .advanced-panel.active {
+            display: block;
+        }
+
+        .adv-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .adv-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .adv-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .adv-field input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-bright);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .adv-field input:focus {
+            border-color: var(--primary-light);
+        }
+
+        /* Action Buttons */
+        .form-actions {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-launch {
+            flex: 1;
+            padding: 16px 28px;
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.02rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+            min-width: 200px;
+        }
+
+        .btn-launch:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5);
+            background: linear-gradient(135deg, #7175f3 0%, #5850ec 100%);
+        }
+
+        .btn-launch:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-clear {
+            padding: 16px 22px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-clear:hover {
+            color: var(--text-bright);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Progress Visualizer */
+        .progress-card {
+            display: none;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-subtle);
+            padding: 32px 36px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .progress-card.active {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .progress-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-pulse {
+            width: 10px;
+            height: 10px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--primary-light);
+            animation: pulse-dot 1.2s infinite;
+        }
+
+        .stage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stage-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s;
+        }
+
+        .stage-item.running {
+            background: rgba(99, 102, 241, 0.12);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .stage-item.completed {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .stage-icon {
+            font-size: 1.2rem;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stage-info {
+            flex: 1;
+        }
+
+        .stage-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+
+        .stage-sub {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .stage-status {
+            font-size: 0.78rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stage-item.pending .stage-status { color: var(--text-subtle); }
+        .stage-item.running .stage-status { color: var(--primary-light); }
+        .stage-item.completed .stage-status { color: #10b981; }
+
+        .progress-bar-wrapper {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 25%;
+            background: linear-gradient(90deg, var(--primary), #06b6d4, #10b981);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        /* Executive Verdict Hero Card */
+        .verdict-hero {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-lg);
+            padding: 36px 40px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verdict-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), #06b6d4, #10b981);
+        }
+
+        .verdict-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .verdict-tag {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 8px;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+        }
+
+        .verdict-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            letter-spacing: -0.5px;
+            line-height: 1.35;
+            margin-top: 10px;
+        }
+
+        /* Confidence Gauge */
+        .confidence-gauge-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            flex-shrink: 0;
+        }
+
+        .gauge-visual {
+            position: relative;
+            width: 54px;
+            height: 54px;
+        }
+
+        .gauge-svg {
+            transform: rotate(-90deg);
+            width: 54px;
+            height: 54px;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.08);
+            stroke-width: 5;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: #10b981;
+            stroke-width: 5;
+            stroke-dasharray: 145;
+            stroke-dashoffset: 20;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--text-bright);
+        }
+
+        .gauge-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gauge-title {
+            font-size: 0.7rem;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .gauge-level {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        /* Action Toolbar */
+        .verdict-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .action-chip {
+            padding: 8px 16px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .action-chip:hover {
+            color: var(--text-bright);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Pillars & Risks Breakdown */
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            margin-bottom: 28px;
+        }
+
+        .pillar-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            padding: 26px;
+        }
+
+        .pillar-card.pros {
+            border-top: 3px solid #10b981;
+        }
+
+        .pillar-card.risks {
+            border-top: 3px solid #f59e0b;
+        }
+
+        .pillar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+
+        .pillar-header.pros-header { color: #34d399; }
+        .pillar-header.risks-header { color: #fbbf24; }
+
+        .pillar-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pillar-item {
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            font-size: 0.9rem;
+            color: #d1d5db;
+            line-height: 1.45;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .pillar-item.pro-item::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .pillar-item.risk-item::before {
+            content: '⚠';
+            color: #f59e0b;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        /* Section Separator */
+        .section-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            letter-spacing: -0.4px;
+            margin: 32px 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .agent-count-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* Agent Deliberation Cards Grid */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .agent-debate-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            padding: 22px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .agent-debate-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .agent-debate-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--card-accent, var(--primary));
+        }
+
+        .agent-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .agent-id-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agent-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--card-accent-bg, rgba(99, 102, 241, 0.15));
+            color: var(--card-accent, var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .agent-meta-text h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+
+        .agent-meta-text span {
+            font-size: 0.72rem;
+            color: var(--text-subtle);
+        }
+
+        .agent-conf-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+        }
+
+        .agent-position-banner {
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--card-accent, var(--primary));
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-bright);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .agent-sub-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-subtle);
+            margin-bottom: 8px;
+        }
+
+        .agent-arg-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .agent-arg-list li {
+            font-size: 0.84rem;
+            color: #d1d5db;
+            line-height: 1.45;
+            padding-left: 14px;
+            position: relative;
+        }
+
+        .agent-arg-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--card-accent, var(--primary));
+            font-weight: bold;
+        }
+
+        .agent-risk-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        /* Follow-up Questions */
+        .followup-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .followup-title {
+            font-weight: 500;
+            color: #8a8a9a;
+            font-size: 0.85em;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .followup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .followup-btn {
+            padding: 12px 16px;
+            background: rgba(108, 92, 231, 0.08);
+            border: 1px solid rgba(108, 92, 231, 0.15);
+            border-radius: 12px;
+            color: #a29bfe;
+            cursor: pointer;
+            font-size: 0.82em;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            text-align: left;
+            line-height: 1.3;
+        }
+
+        .followup-btn:hover {
+            background: rgba(108, 92, 231, 0.18);
+            border-color: #6c5ce7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+            color: #c8c8f0;
+        }
+
+        .followup-btn .icon {
+            margin-right: 6px;
+        }
+
+        /* History Tab Styles */
+        .history-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .search-field {
+            flex: 1;
+            position: relative;
+            min-width: 200px;
+        }
+
+        .search-field input {
+            width: 100%;
+            padding: 12px 18px 12px 42px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-bright);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-field input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-subtle);
+        }
+
+        .btn-action-outline {
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action-outline:hover {
+            color: var(--text-bright);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .btn-danger-outline {
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-danger-outline:hover {
+            background: rgba(239, 68, 68, 0.18);
+        }
+
+        .history-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .hist-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 18px 22px;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .hist-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            background: var(--bg-card-hover);
+        }
+
+        .hist-main {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .hist-question {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 5px;
+        }
+
+        .hist-answer {
+            font-size: 0.86rem;
+            color: var(--primary-light);
+            margin-bottom: 6px;
+        }
+
+        .hist-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.75rem;
+            color: var(--text-subtle);
+            flex-wrap: wrap;
+        }
+
+        .hist-tag {
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        .hist-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-icon:hover {
+            color: var(--text-bright);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-icon.del:hover {
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .empty-history-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-subtle);
+        }
+
+        .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        /* Agent Roster Tab */
+        .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .roster-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .roster-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .roster-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .roster-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+
+        .roster-role {
+            font-size: 0.74rem;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .roster-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* How it works */
+        .how-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .how-card h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 10px;
+        }
+
+        .how-card p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-bright);
+            font-size: 0.88rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px 20px;
+            color: var(--text-subtle);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border-subtle);
+            margin-top: 40px;
+        }
+
+        .footer span {
+            color: var(--primary-light);
+        }
+
+        @media (max-width: 900px) {
+            .navbar {
+                padding: 14px 20px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-tabs {
+                justify-content: center;
+            }
+            .pillars-grid, .adv-grid {
+                grid-template-columns: 1fr;
+            }
+            .glass-card, .verdict-hero {
+                padding: 24px 20px;
+            }
+            .hero-title {
+                font-size: 1.7rem;
+            }
+            .verdict-top {
+                flex-direction: column;
+            }
+            .followup-grid {
+                grid-template-columns: 1fr;
+            }
+            .agents-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-tabs {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-tab-btn {
+                justify-content: center;
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+            .btn-launch {
+                width: 100%;
+            }
+            .btn-clear {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <a href="#" class="nav-brand" onclick="switchTab('arena'); return false;">
+            <div class="brand-icon">⚡</div>
+            <div class="brand-text">
+                <h1>AI Debate System <span class="brand-badge">Multi-Agent</span></h1>
+                <p>Collaborative AI Decision Intelligence</p>
+            </div>
+        </a>
+
+        <div class="nav-tabs">
+            <button type="button" class="nav-tab-btn active" id="tabBtn-arena" onclick="switchTab('arena')">
+                <span>🎯</span> Debate Arena
+            </button>
+            <button type="button" class="nav-tab-btn" id="tabBtn-history" onclick="switchTab('history')">
+                <span>📜</span> Decision Archive
+            </button>
+            <button type="button" class="nav-tab-btn" id="tabBtn-roster" onclick="switchTab('roster')">
+                <span>🤖</span> AI Roster (9 Agents)
+            </button>
+            <button type="button" class="nav-tab-btn" id="tabBtn-pipeline" onclick="switchTab('pipeline')">
+                <span>💡</span> Pipeline
+            </button>
+        </div>
+
+        <div class="nav-status">
+            <div class="status-dot"></div>
+            <span>9 Specialized Agents Ready</span>
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="cycleTheme()" title="Toggle theme (Light/Dark/System)">
+                <span id="themeIcon">🌙</span>
+                <span id="themeLabel">Dark</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        
+        <!-- Tab 1: Debate Arena -->
+        <div id="tab-arena" class="tab-content">
+            
+            <div class="hero-banner">
+                <h2 class="hero-title">Evaluate Complex Decisions with AI Specialists</h2>
+                <p class="hero-desc">Ask any architectural, technical, cost, or business question. 9 autonomous AI agents will debate trade-offs and provide a synthesized final recommendation.</p>
+            </div>
+
+            <!-- Input Glass Card -->
+            <div class="glass-card">
+                <form id="debateForm" onsubmit="handleDebateSubmit(event)">
+                    <div class="input-group-header">
+                        <label class="input-label" for="problem">
+                            <span class="input-label-icon">✦</span> What decision do you want to analyze?
+                        </label>
+                        <button type="button" class="param-toggle-btn" id="toggleParamsBtn" onclick="toggleAdvancedParams()">
+                            <span>⚙️ Advanced Options & Constraints</span>
+                            <span id="paramArrow">▼</span>
+                        </button>
+                    </div>
+
+                    <div class="textarea-wrapper">
+                        <textarea class="query-input" id="problem" name="problem" 
+                            placeholder="Type any decision question here (e.g. Should we migrate our monolith to microservices? or Should we use AWS vs Azure?)" 
+                            required></textarea>
+                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                            <label for="contextFile" class="file-attach-btn" style="cursor: pointer; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; color: var(--primary-light); display: flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;">
+                                <span>📎</span> Attach PDF or Image for Context
+                            </label>
+                            <input type="file" id="contextFile" accept=".pdf,image/*" style="display: none;" onchange="handleFileSelect(this)">
+                            <span id="fileNameDisplay" style="font-size: 0.8rem; color: var(--text-muted); display: none;"></span>
+                            <button type="button" id="removeFileBtn" style="display: none; background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; padding: 0 4px;" onclick="removeFile()" title="Remove file">×</button>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Advanced Options & Constraints -->
+                    <div class="advanced-panel" id="advancedPanel">
+                        <p class="adv-desc">💡 <em>Optional:</em> Specify distinct options to compare, criteria to prioritize, or budget/timeline constraints.</p>
+                        <div class="adv-grid">
+                            <div class="adv-field">
+                                <label for="optionsInput">Options to Compare (Comma-separated)</label>
+                                <input type="text" id="optionsInput" placeholder="e.g. Full Microservices, Modular Monolith, Serverless">
+                            </div>
+                            <div class="adv-field">
+                                <label for="criteriaInput">Evaluation Criteria (Comma-separated)</label>
+                                <input type="text" id="criteriaInput" placeholder="e.g. Cost, Scalability, Developer Speed, Security">
+                            </div>
+                        </div>
+                        <div class="adv-field">
+                            <label for="contextInput">Constraints & Context (Budget, deadlines, team size)</label>
+                            <input type="text" id="contextInput" placeholder="e.g. 6-month launch deadline, team of 8 developers, $20k monthly infrastructure budget">
+                        </div>
+                    </div>
+
+                    <!-- Quick Example Buttons -->
+                    <div class="preset-section">
+                        <div class="preset-header">⚡ Quick Examples (Click any to populate question)</div>
+                        <div class="preset-grid">
+                            <button type="button" class="preset-chip" onclick="setQuickExample('Should we migrate our backend architecture to microservices?', ['Microservices', 'Modular Monolith'], ['Scalability', 'Maintenance Cost', 'Deployment Speed'], '10-person engineering team with monolithic codebase')">
+                                <span>🏗️</span> Microservices Migration
+                            </button>
+                            <button type="button" class="preset-chip" onclick="setQuickExample('Should we use AWS or Azure for our cloud infrastructure?', ['AWS', 'Microsoft Azure'], ['Cost', 'Enterprise Integrations', 'Reliability'], 'Startup expanding enterprise SaaS offerings')">
+                                <span>☁️</span> AWS vs Azure
+                            </button>
+                            <button type="button" class="preset-chip" onclick="setQuickExample('Should we hire remote engineers or require in-office teams?', ['Full Remote', 'In-Office Hybrid'], ['Talent Pool', 'Team Velocity', 'Office Overhead'], 'Fast-growing software startup')">
+                                <span>🏠</span> Remote vs In-Office
+                            </button>
+                            <button type="button" class="preset-chip" onclick="setQuickExample('Should we build in-house AI features or use managed APIs like OpenAI?', ['In-House Open Source LLMs', 'Managed OpenAI/Anthropic APIs'], ['Data Privacy', 'API Costs', 'Time to Market'], 'Processing proprietary customer documents')">
+                                <span>🤖</span> Build vs Buy AI Stack
+                            </button>
+                            <button type="button" class="preset-chip" onclick="setQuickExample('Which is better for our new backend service: Go or Python?', ['Go (Golang)', 'Python (FastAPI)'], ['Throughput & Latency', 'Developer Velocity', 'Ecosystem'], 'High-throughput real-time streaming API')">
+                                <span>💻</span> Go vs Python
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-launch" id="debateBtn">
+                            <span>🚀</span> Start Multi-Agent Debate
+                        </button>
+                        <button type="button" class="btn-clear" onclick="clearForm()">
+                            Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Live Progress / Debate Timeline -->
+            <div class="progress-card" id="progressCard">
+                <div class="progress-header">
+                    <div class="progress-title">
+                        <div class="live-pulse"></div>
+                        <span>Agents Are Actively Debating Your Question...</span>
+                    </div>
+                    <span style="font-size: 0.85rem; color: var(--primary-light); font-family: 'JetBrains Mono', monospace;" id="liveTimeElapsed">0s elapsed</span>
+                </div>
+
+                <div class="stage-list">
+                    <div class="stage-item" id="stage-1">
+                        <div class="stage-icon">👔</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Supervisor Orchestration</div>
+                            <div class="stage-sub">Deconstructing problem & activating specialist domains</div>
+                        </div>
+                        <div class="stage-status" id="stage-1-status">Waiting...</div>
+                    </div>
+
+                    <div class="stage-item" id="stage-2">
+                        <div class="stage-icon">👥</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Specialist Deliberation</div>
+                            <div class="stage-sub">Technical, Cost, Risk, Security & Business agents debating</div>
+                        </div>
+                        <div class="stage-status" id="stage-2-status">Waiting...</div>
+                    </div>
+
+                    <div class="stage-item" id="stage-3">
+                        <div class="stage-icon">🔍</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Critic Evaluation</div>
+                            <div class="stage-sub">Stress-testing assumptions and finding trade-offs</div>
+                        </div>
+                        <div class="stage-status" id="stage-3-status">Waiting...</div>
+                    </div>
+
+                    <div class="stage-item" id="stage-4">
+                        <div class="stage-icon">🔬</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Evidence & RAG Verification</div>
+                            <div class="stage-sub">Validating factual claims against vector database</div>
+                        </div>
+                        <div class="stage-status" id="stage-4-status">Waiting...</div>
+                    </div>
+
+                    <div class="stage-item" id="stage-5">
+                        <div class="stage-icon">⚖️</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Decision Synthesis</div>
+                            <div class="stage-sub">Synthesizing final consensus and computing confidence</div>
+                        </div>
+                        <div class="stage-status" id="stage-5-status">Waiting...</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+
+            <!-- Deliberation Results Section -->
+            <div class="results-section" id="resultsSection">
+                
+                <!-- Executive Verdict Hero Card -->
+                <div class="verdict-hero">
+                    <div class="verdict-top">
+                        <div>
+                            <span class="verdict-tag">📊 Final Recommendation</span>
+                            <h2 class="verdict-headline" id="verdictHeadline">Partial Migration Recommended</h2>
+                        </div>
+
+                        <!-- Confidence Visual Gauge -->
+                        <div class="confidence-gauge-box">
+                            <div class="gauge-visual">
+                                <svg class="gauge-svg">
+                                    <circle class="gauge-bg" cx="27" cy="27" r="23"></circle>
+                                    <circle class="gauge-fill" id="gaugeCircle" cx="27" cy="27" r="23"></circle>
+                                </svg>
+                                <div class="gauge-value" id="gaugePercent">85%</div>
+                            </div>
+                            <div class="gauge-meta">
+                                <span class="gauge-title">Consensus Confidence</span>
+                                <span class="gauge-level" id="gaugeLevelText">High Confidence</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verdict-actions">
+                        <button type="button" class="action-chip" onclick="copyVerdictSummary()">
+                            <span>📋</span> Copy Summary
+                        </button>
+                        <button type="button" class="action-chip" onclick="exportMarkdownReport()">
+                            <span>📥</span> Export Report (.md)
+                        </button>
+                        <button type="button" class="action-chip" onclick="window.print()">
+                            <span>🖨️</span> Print / PDF
+                        </button>
+                        <button type="button" class="action-chip" onclick="document.getElementById('problem').focus(); window.scrollTo({top: 100, behavior: 'smooth'});">
+                            <span>🔄</span> Ask Another Question
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Strategic Pillars & Risks Grid -->
+                <div class="pillars-grid">
+                    <!-- Supporting Pillars -->
+                    <div class="pillar-card pros">
+                        <div class="pillar-header pros-header">
+                            <span>✅</span> Supporting Arguments & Reasons
+                        </div>
+                        <ul class="pillar-list" id="pillarsList"></ul>
+                    </div>
+
+                    <!-- Critical Risks -->
+                    <div class="pillar-card risks">
+                        <div class="pillar-header risks-header">
+                            <span>⚠️</span> Identified Risks & Caveats
+                        </div>
+                        <ul class="pillar-list" id="risksList"></ul>
+                    </div>
+                </div>
+
+                <!-- Agent Deliberations Cards -->
+                <div class="section-headline">
+                    <span>Individual Agent Perspectives</span>
+                    <span class="agent-count-badge" id="agentCountBadge">Specialists</span>
+                </div>
+
+                <div class="agents-grid" id="agentsGrid"></div>
+
+                <!-- FOLLOW-UP QUESTIONS SECTION -->
+                <div class="followup-section" id="followupSection" style="display: none;">
+                    <div class="followup-title">💡 Explore Further — Related Questions</div>
+                    <div class="followup-grid" id="followupGrid"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Tab 2: Decision Archive (Chat History) -->
+        <div id="tab-history" class="tab-content" style="display: none;">
+            <div class="hero-banner">
+                <h2 class="hero-title">📜 Decision Archive</h2>
+                <p class="hero-desc">Your past debate queries and AI recommendations are saved here. You can search past questions, reload them into the Arena, or delete them.</p>
+            </div>
+
+            <div class="history-controls">
+                <div class="search-field">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="histSearchInput" placeholder="Search past decision questions or answers..." oninput="filterHistory(this.value)">
+                </div>
+                <button type="button" class="btn-action-outline" onclick="loadHistory()">🔄 Refresh</button>
+                <button type="button" class="btn-danger-outline" onclick="clearAllHistory()">🗑️ Clear All History</button>
+            </div>
+
+            <div class="history-card-list" id="historyCardList">
+                <div class="empty-history-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Loading decision archive...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Agent Roster (The 9 AI Agents) -->
+        <div id="tab-roster" class="tab-content" style="display: none;">
+            <div class="hero-banner">
+                <h2 class="hero-title">🤖 AI Agent Council</h2>
+                <p class="hero-desc">Learn about the 9 specialized AI personas that collaborate and debate each of your questions from different angles.</p>
+            </div>
+
+            <div class="roster-grid">
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">👔</div>
+                        <div>
+                            <div class="roster-title">Supervisor Agent</div>
+                            <div class="roster-role">Workflow Orchestrator</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Deconstructs the question into structured domains and dynamically selects the necessary specialist council.</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">🏗️</div>
+                        <div>
+                            <div class="roster-title">Technical Agent</div>
+                            <div class="roster-role">Engineering Feasibility</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Analyzes system complexity, scalability, architecture design, maintainability, and implementation difficulty.</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">💰</div>
+                        <div>
+                            <div class="roster-title">Cost Agent</div>
+                            <div class="roster-role">Financial & ROI Analyst</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Estimates infrastructure costs, operational budgets, developer resource costs, and return on investment (ROI).</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">⚠️</div>
+                        <div>
+                            <div class="roster-title">Risk Agent</div>
+                            <div class="roster-role">Failure Modes & Pitfalls</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Identifies worst-case failure scenarios, downtime hazards, operational vulnerabilities, and bottleneck risks.</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">🔒</div>
+                        <div>
+                            <div class="roster-title">Security Agent</div>
+                            <div class="roster-role">Threat Assessment</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Evaluates data privacy regulations (GDPR/HIPAA), attack surfaces, authentication, encryption, and compliance.</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">💼</div>
+                        <div>
+                            <div class="roster-title">Business Agent</div>
+                            <div class="roster-role">Market & Strategy</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Evaluates time-to-market, product competitive advantage, customer retention, growth velocity, and business alignment.</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">🔍</div>
+                        <div>
+                            <div class="roster-title">Critic Agent</div>
+                            <div class="roster-role">Adversarial Review</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Cross-examines claims made by other agents, spotting hidden assumptions, logical fallacies, and blind spots.</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">🔬</div>
+                        <div>
+                            <div class="roster-title">Verification Agent</div>
+                            <div class="roster-role">Evidence Fact-Checker</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Queries the ChromaDB vector database to verify whether claims are backed by factual technical documentation.</p>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <div class="roster-avatar" style="background: rgba(99, 102, 241, 0.15); color: #6366f1;">⚖️</div>
+                        <div>
+                            <div class="roster-title">Decision Agent</div>
+                            <div class="roster-role">Final Synthesizer</div>
+                        </div>
+                    </div>
+                    <p class="roster-desc">Weighs all arguments, balances trade-offs, assigns confidence scores, and creates the final verdict.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Pipeline (How It Works) -->
+        <div id="tab-pipeline" class="tab-content" style="display: none;">
+            <div class="hero-banner">
+                <h2 class="hero-title">💡 How the Multi-Agent Debate Works</h2>
+                <p class="hero-desc">Understanding the end-to-end workflow behind ConsensusAI.</p>
+            </div>
+
+            <div class="how-card">
+                <h3>1. Supervisor Orchestration & Domain Identification</h3>
+                <p>When you ask a question, the <strong>Supervisor Agent</strong> examines the topic and determines which specialist domains (Technical, Cost, Risk, Security, Business) are necessary to produce a fair, balanced debate.</p>
+            </div>
+
+            <div class="how-card">
+                <h3>2. Multi-Agent Deliberation</h3>
+                <p>Each specialist agent independently analyzes your scenario through its specialized lens, formulating a stance, listing reasons, and flagging domain-specific risks.</p>
+            </div>
+
+            <div class="how-card">
+                <h3>3. Adversarial Critique & Fact-Checking</h3>
+                <p>The <strong>Critic Agent</strong> challenges the arguments to prevent bias or overconfidence, while the <strong>Verification Agent</strong> checks factual claims against evidence.</p>
+            </div>
+
+            <div class="how-card">
+                <h3>4. Final Synthesis & Decision</h3>
+                <p>The <strong>Decision Agent</strong> merges all agent viewpoints into a single clear recommendation with supporting pillars, risks, and a weighted consensus confidence score.</p>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>AI Debate System · Multi-Agent Consensus · Powered by <span>FastAPI</span> · <span>Groq LLMs</span> · <span>LangGraph</span></p>
+        </footer>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ----- Theme Toggle -----
+        function cycleTheme() {
+            const themes = ['dark', 'light', 'system'];
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            let idx = themes.indexOf(current);
+            if (idx === -1) idx = 0;
+            const next = themes[(idx + 1) % themes.length];
+            document.documentElement.setAttribute('data-theme', next);
+            
+            const icon = document.getElementById('themeIcon');
+            const label = document.getElementById('themeLabel');
+            if (next === 'dark') {
+                icon.textContent = '🌙';
+                label.textContent = 'Dark';
+            } else if (next === 'light') {
+                icon.textContent = '☀️';
+                label.textContent = 'Light';
+            } else {
+                icon.textContent = '🖥️';
+                label.textContent = 'System';
+            }
+            localStorage.setItem('preferred-theme', next);
+        }
+
+        // Restore saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const saved = localStorage.getItem('preferred-theme');
+            if (saved && ['dark', 'light', 'system'].includes(saved)) {
+                document.documentElement.setAttribute('data-theme', saved);
+                const icon = document.getElementById('themeIcon');
+                const label = document.getElementById('themeLabel');
+                if (saved === 'dark') {
+                    icon.textContent = '🌙';
+                    label.textContent = 'Dark';
+                } else if (saved === 'light') {
+                    icon.textContent = '☀️';
+                    label.textContent = 'Light';
+                } else {
+                    icon.textContent = '🖥️';
+                    label.textContent = 'System';
+                }
+            }
+        });
+
+        // ----- Core App Logic -----
+        let currentDebateResult = null;
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        let cachedHistory = [];
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById('tabBtn-' + tabName);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+            
+            const target = document.getElementById('tab-' + tabName);
+            if (target) target.style.display = 'block';
+
+            if (tabName === 'history') {
+                loadHistory();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Toggle Advanced Parameters
+        function toggleAdvancedParams() {
+            const panel = document.getElementById('advancedPanel');
+            const arrow = document.getElementById('paramArrow');
+            if (panel.classList.contains('active')) {
+                panel.classList.remove('active');
+                arrow.textContent = '▼';
+            } else {
+                panel.classList.add('active');
+                arrow.textContent = '▲';
+            }
+        }
+
+        // Quick Example Click Handler
+        function setQuickExample(problem, options, criteria, context) {
+            document.getElementById('problem').value = problem;
+            
+            const optionsInput = document.getElementById('optionsInput');
+            const criteriaInput = document.getElementById('criteriaInput');
+            const contextInput = document.getElementById('contextInput');
+
+            if (optionsInput && options) optionsInput.value = options.join(', ');
+            if (criteriaInput && criteria) criteriaInput.value = criteria.join(', ');
+            if (contextInput && context) contextInput.value = context;
+
+            switchTab('arena');
+            document.getElementById('problem').focus();
+            
+            showToast('✓ Example question loaded into input!');
+        }
+
+        // Clear Form
+        function clearForm() {
+            document.getElementById('debateForm').reset();
+            document.getElementById('resultsSection').classList.remove('active');
+            document.getElementById('progressCard').classList.remove('active');
+            showToast('Cleared input form');
+        }
+
+        // Toast Notifications
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderColor = isError ? 'rgba(239, 68, 68, 0.5)' : 'rgba(99, 102, 241, 0.5)';
+            toast.innerHTML = `<span>${isError ? '⚠️' : '✨'}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(30px)';
+                toast.style.transition = 'all 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // Timeline Progress Helper
+        function setStageState(stageNum, state, text) {
+            const el = document.getElementById(`stage-${stageNum}`);
+            const statusEl = document.getElementById(`stage-${stageNum}-status`);
+            if (!el || !statusEl) return;
+
+            el.className = 'stage-item ' + state;
+            statusEl.textContent = text;
+        }
+
+        function startProgressAnimation() {
+            elapsedSeconds = 0;
+            const timeEl = document.getElementById('liveTimeElapsed');
+            const bar = document.getElementById('progressBar');
+            timeEl.textContent = '0s elapsed';
+            bar.style.width = '15%';
+
+            for (let i = 1; i <= 5; i++) {
+                setStageState(i, 'pending', 'Waiting...');
+            }
+
+            setStageState(1, 'running', 'Orchestrating...');
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                timeEl.textContent = `${elapsedSeconds}s elapsed`;
+
+                if (elapsedSeconds === 2) {
+                    setStageState(1, 'completed', 'Done');
+                    setStageState(2, 'running', 'Debating...');
+                    bar.style.width = '40%';
+                } else if (elapsedSeconds === 5) {
+                    setStageState(2, 'completed', 'Done');
+                    setStageState(3, 'running', 'Critiquing...');
+                    bar.style.width = '65%';
+                } else if (elapsedSeconds === 8) {
+                    setStageState(3, 'completed', 'Done');
+                    setStageState(4, 'running', 'Fact-checking...');
+                    bar.style.width = '85%';
+                } else if (elapsedSeconds === 11) {
+                    setStageState(4, 'completed', 'Done');
+                    setStageState(5, 'running', 'Synthesizing...');
+                    bar.style.width = '95%';
+                }
+            }, 1000);
+        }
+
+        function stopProgressAnimation() {
+            if (timerInterval) clearInterval(timerInterval);
+            for (let i = 1; i <= 5; i++) {
+                setStageState(i, 'completed', 'Done');
+            }
+            document.getElementById('progressBar').style.width = '100%';
+        }
+
+        // File Context Upload
+        let selectedFile = null;
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                document.getElementById('fileNameDisplay').textContent = selectedFile.name;
+                document.getElementById('fileNameDisplay').style.display = 'inline';
+                document.getElementById('removeFileBtn').style.display = 'inline';
+            }
+        }
+        function removeFile() {
+            selectedFile = null;
+            document.getElementById('contextFile').value = '';
+            document.getElementById('fileNameDisplay').style.display = 'none';
+            document.getElementById('removeFileBtn').style.display = 'none';
+        }
+
+        // Set a follow-up question
+        function setFollowupQuestion(question) {
+            document.getElementById('problem').value = question;
+            
+            const optionsInput = document.getElementById('optionsInput');
+            const criteriaInput = document.getElementById('criteriaInput');
+            const contextInput = document.getElementById('contextInput');
+            if (optionsInput) optionsInput.value = '';
+            if (criteriaInput) criteriaInput.value = '';
+            if (contextInput) contextInput.value = '';
+
+            setTimeout(() => {
+                document.getElementById('debateForm').dispatchEvent(new Event('submit'));
+            }, 300);
+            
+            showToast('🔄 Loading follow-up question...');
+        }
+
+        // Form Submit
+        async function handleDebateSubmit(e) {
+            e.preventDefault();
+
+            const problem = document.getElementById('problem').value.trim();
+            if (!problem) {
+                showToast('Please enter a question to analyze.', true);
+                return;
+            }
+
+            const optionsStr = document.getElementById('optionsInput') ? document.getElementById('optionsInput').value.trim() : '';
+            const criteriaStr = document.getElementById('criteriaInput') ? document.getElementById('criteriaInput').value.trim() : '';
+            let context = document.getElementById('contextInput') ? document.getElementById('contextInput').value.trim() : '';
+
+            const options = optionsStr ? optionsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+            const criteria = criteriaStr ? criteriaStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            const debateBtn = document.getElementById('debateBtn');
+            debateBtn.disabled = true;
+            debateBtn.innerHTML = '<span>⏳</span> Debating...';
+
+            document.getElementById('resultsSection').classList.remove('active');
+            const progressCard = document.getElementById('progressCard');
+            progressCard.classList.add('active');
+            startProgressAnimation();
+
+            progressCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            if (selectedFile) {
+                showToast('📄 Extracting context from file...');
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                try {
+                    const uploadRes = await fetch('/upload_context', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (uploadRes.ok) {
+                        const uploadData = await uploadRes.json();
+                        if (uploadData.text && !uploadData.text.startsWith('[Error')) {
+                            context = context ? context + "\n\nFile Context:\n" + uploadData.text : uploadData.text;
+                            showToast('✅ File context extracted successfully!');
+                        } else {
+                            showToast('⚠️ Could not extract text from file: ' + uploadData.text, true);
+                        }
+                    }
+                } catch(err) {
+                    console.error("File upload error:", err);
+                    showToast('⚠️ File upload failed.', true);
+                }
+            }
+
+            const payload = {
+                problem: problem,
+                options: options,
+                criteria: criteria,
+                constraints: [],
+                context: context
+            };
+
+            try {
+                const res = await fetch('/debate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+                }
+
+                const data = await res.json();
+                currentDebateResult = data;
+
+                stopProgressAnimation();
+                setTimeout(() => {
+                    progressCard.classList.remove('active');
+                    renderDebateResults(data);
+                    debateBtn.disabled = false;
+                    debateBtn.innerHTML = '<span>🚀</span> Start Multi-Agent Debate';
+                }, 600);
+
+            } catch (err) {
+                stopProgressAnimation();
+                progressCard.classList.remove('active');
+                debateBtn.disabled = false;
+                debateBtn.innerHTML = '<span>🚀</span> Start Multi-Agent Debate';
+                showToast(err.message, true);
+                alert('Debate error: ' + err.message);
+            }
+        }
+
+        // Render Results
+        function renderDebateResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.add('active');
+
+            document.getElementById('verdictHeadline').textContent = data.recommendation;
+
+            const confPercent = Math.round((data.confidence || 0.85) * 100);
+            document.getElementById('gaugePercent').textContent = confPercent + '%';
+
+            const circumference = 145;
+            const offset = circumference - (confPercent / 100 * circumference);
+            const gaugeCircle = document.getElementById('gaugeCircle');
+            gaugeCircle.style.strokeDasharray = circumference;
+            gaugeCircle.style.strokeDashoffset = offset;
+
+            const levelText = document.getElementById('gaugeLevelText');
+            if (confPercent >= 75) {
+                levelText.textContent = 'High Confidence';
+                levelText.style.color = '#10b981';
+                gaugeCircle.style.stroke = '#10b981';
+            } else if (confPercent >= 50) {
+                levelText.textContent = 'Medium Confidence';
+                levelText.style.color = '#f59e0b';
+                gaugeCircle.style.stroke = '#f59e0b';
+            } else {
+                levelText.textContent = 'Low Confidence';
+                levelText.style.color = '#ef4444';
+                gaugeCircle.style.stroke = '#ef4444';
+            }
+
+            // Supporting Arguments
+            const pillarsList = document.getElementById('pillarsList');
+            pillarsList.innerHTML = '';
+            if (data.arguments && data.arguments.length) {
+                data.arguments.forEach(arg => {
+                    const li = document.createElement('li');
+                    li.className = 'pillar-item pro-item';
+                    li.textContent = arg;
+                    pillarsList.appendChild(li);
+                });
+            } else {
+                pillarsList.innerHTML = '<li class="pillar-item">No specific supporting arguments returned.</li>';
+            }
+
+            // Risks
+            const risksList = document.getElementById('risksList');
+            risksList.innerHTML = '';
+            if (data.risks && data.risks.length) {
+                data.risks.forEach(risk => {
+                    const li = document.createElement('li');
+                    li.className = 'pillar-item risk-item';
+                    li.textContent = risk;
+                    risksList.appendChild(li);
+                });
+            } else {
+                risksList.innerHTML = '<li class="pillar-item" style="color: #9ca3af;">No critical risks flagged.</li>';
+            }
+
+            // Agent Cards
+            const agentThemes = {
+                'technical': { accent: '#06b6d4', bg: 'rgba(6, 182, 212, 0.12)', emoji: '🏗️', role: 'Technical Architecture' },
+                'cost': { accent: '#10b981', bg: 'rgba(16, 185, 129, 0.12)', emoji: '💰', role: 'Cost & Financial' },
+                'risk': { accent: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)', emoji: '⚠️', role: 'Risk & Vulnerability' },
+                'security': { accent: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)', emoji: '🔒', role: 'Security & Compliance' },
+                'business': { accent: '#ec4899', bg: 'rgba(236, 72, 153, 0.12)', emoji: '💼', role: 'Business Strategy' },
+                'supervisor': { accent: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)', emoji: '👔', role: 'Orchestrator' },
+                'critic': { accent: '#a855f7', bg: 'rgba(168, 85, 247, 0.12)', emoji: '🔍', role: 'Critical Evaluator' },
+                'decision': { accent: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)', emoji: '⚖️', role: 'Decision Synthesizer' }
+            };
+
+            const agentsGrid = document.getElementById('agentsGrid');
+            agentsGrid.innerHTML = '';
+
+            if (data.agent_outputs && data.agent_outputs.length) {
+                document.getElementById('agentCountBadge').textContent = `${data.agent_outputs.length} Agents Participated`;
+                data.agent_outputs.forEach(agent => {
+                    const roleKey = (agent.role || agent.name || '').toLowerCase();
+                    const theme = agentThemes[roleKey] || { accent: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)', emoji: '🤖', role: agent.name };
+
+                    const card = document.createElement('div');
+                    card.className = 'agent-debate-card';
+                    card.style.setProperty('--card-accent', theme.accent);
+                    card.style.setProperty('--card-accent-bg', theme.bg);
+
+                    const conf = agent.confidence ? Math.round(agent.confidence * 100) : 80;
+
+                    let argsHtml = '';
+                    if (agent.arguments && agent.arguments.length) {
+                        argsHtml = agent.arguments.map(a => `<li>${a}</li>`).join('');
+                    } else if (agent.reason) {
+                        argsHtml = `<li>${agent.reason}</li>`;
+                    }
+
+                    let riskHtml = '';
+                    if (agent.risks && agent.risks.length) {
+                        riskHtml = agent.risks.map(r => `<div class="agent-risk-pill"><span>⚠️</span> ${r}</div>`).join('');
+                    }
+
+                    card.innerHTML = `
+                        <div class="agent-card-top">
+                            <div class="agent-id-wrap">
+                                <div class="agent-avatar">${agent.emoji || theme.emoji}</div>
+                                <div class="agent-meta-text">
+                                    <h3>${agent.name} Agent</h3>
+                                    <span>${agent.title || theme.role}</span>
+                                </div>
+                            </div>
+                            <span class="agent-conf-badge">${conf}% Conf</span>
+                        </div>
+                        <div class="agent-position-banner">
+                            ${agent.position || 'Stance articulated'}
+                        </div>
+                        <div class="agent-body-section">
+                            <div class="agent-sub-title">Core Arguments</div>
+                            <ul class="agent-arg-list">${argsHtml}</ul>
+                            ${riskHtml}
+                        </div>
+                    `;
+                    agentsGrid.appendChild(card);
+                });
+            } else {
+                agentsGrid.innerHTML = '<div style="color: var(--text-muted);">No specialist agent cards to display.</div>';
+            }
+
+            // Follow-up Questions
+            const followupSection = document.getElementById('followupSection');
+            const followupGrid = document.getElementById('followupGrid');
+            followupGrid.innerHTML = '';
+
+            if (data.followup_questions && data.followup_questions.length > 0) {
+                const icons = ['🔍', '📌', '💡', '🎯'];
+                data.followup_questions.forEach((q, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'followup-btn';
+                    btn.innerHTML = `<span class="icon">${icons[index % icons.length]}</span> ${q}`;
+                    btn.onclick = function() {
+                        setFollowupQuestion(q);
+                    };
+                    followupGrid.appendChild(btn);
+                });
+                followupSection.style.display = 'block';
+            } else {
+                followupSection.style.display = 'none';
+            }
+
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            showToast('✓ Debate finished successfully!');
+        }
+
+        // Copy Summary
+        function copyVerdictSummary() {
+            if (!currentDebateResult) return;
+            const text = `AI DEBATE SYSTEM - FINAL RECOMMENDATION
+Decision: ${document.getElementById('problem').value}
+Recommendation: ${currentDebateResult.recommendation}
+Confidence: ${Math.round((currentDebateResult.confidence || 0.85) * 100)}%
+
+SUPPORTING REASONS:
+${(currentDebateResult.arguments || []).map(a => '• ' + a).join('\n')}
+
+RISKS:
+${(currentDebateResult.risks || []).map(r => '• ' + r).join('\n')}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied summary to clipboard');
+            }).catch(() => {
+                showToast('Failed to copy', true);
+            });
+        }
+
+        // Export Markdown Report
+        function exportMarkdownReport() {
+            if (!currentDebateResult) return;
+            const md = `# AI Decision Report: ${document.getElementById('problem').value}
+**Generated**: ${new Date().toLocaleString()}
+**Confidence**: ${Math.round((currentDebateResult.confidence || 0.85) * 100)}%
+
+---
+
+## 🎯 Final Recommendation
+> **${currentDebateResult.recommendation}**
+
+## ✅ Supporting Arguments
+${(currentDebateResult.arguments || []).map(a => `- ${a}`).join('\n')}
+
+## ⚠️ Identified Risks
+${(currentDebateResult.risks || []).map(r => `- ${r}`).join('\n')}
+
+## 🤖 Specialist Perspectives
+${(currentDebateResult.agent_outputs || []).map(ag => `
+### ${ag.name} Agent (${ag.title || ag.role})
+- **Stance**: ${ag.position}
+- **Confidence**: ${Math.round((ag.confidence || 0.8) * 100)}%
+${(ag.arguments || []).map(arg => `  - ${arg}`).join('\n')}
+`).join('\n')}`;
+
+            const blob = new Blob([md], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `decision_report_${Date.now()}.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Downloaded Markdown report');
+        }
+
+        // History Management
+        async function loadHistory() {
+            const listEl = document.getElementById('historyCardList');
+            listEl.innerHTML = '<div class="empty-history-state"><div class="empty-icon">⏳</div><p>Fetching saved decisions...</p></div>';
+
+            try {
+                const res = await fetch('/history?limit=50');
+                const data = await res.json();
+                cachedHistory = data.history || [];
+                renderHistoryList(cachedHistory);
+            } catch (err) {
+                listEl.innerHTML = '<div class="empty-history-state"><div class="empty-icon">❌</div><p>Failed to load history</p></div>';
+            }
+        }
+
+        function filterHistory(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) {
+                renderHistoryList(cachedHistory);
+                return;
+            }
+            const filtered = cachedHistory.filter(item => 
+                (item.question && item.question.toLowerCase().includes(q)) ||
+                (item.answer && item.answer.toLowerCase().includes(q))
+            );
+            renderHistoryList(filtered);
+        }
+
+        function renderHistoryList(history) {
+            const listEl = document.getElementById('historyCardList');
+            if (!history || history.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-history-state">
+                        <div class="empty-icon">📭</div>
+                        <p>No decision logs found. Ask a question in the Debate Arena!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            history.forEach(item => {
+                const conf = Math.round((item.confidence || 0) * 100);
+                const d = new Date(item.timestamp);
+                const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const agents = item.agents_used && item.agents_used.length ? item.agents_used.join(', ') : 'Specialists';
+
+                html += `
+                    <div class="hist-card" id="hist-${item.id}">
+                        <div class="hist-main">
+                            <div class="hist-question">❓ ${escapeHtml(item.question)}</div>
+                            <div class="hist-answer">💡 ${escapeHtml(item.answer)}</div>
+                            <div class="hist-meta">
+                                <span>📅 ${dateStr}</span>
+                                <span class="hist-tag">🎯 ${conf}% Conf</span>
+                                <span>🤖 ${agents}</span>
+                            </div>
+                        </div>
+                        <div class="hist-actions">
+                            <button type="button" class="btn-icon" title="Reload into Arena" onclick="recallHistory(${item.id})">👁️</button>
+                            <button type="button" class="btn-icon del" title="Delete" onclick="deleteHistoryItem(${item.id})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function recallHistory(id) {
+            const item = cachedHistory.find(h => h.id === id);
+            if (item) {
+                document.getElementById('problem').value = item.question;
+                switchTab('arena');
+                showToast('Loaded question into Arena');
+            }
+        }
+
+        async function deleteHistoryItem(id) {
+            if (!confirm('Delete this saved question?')) return;
+            try {
+                await fetch(`/history/${id}`, { method: 'DELETE' });
+                cachedHistory = cachedHistory.filter(h => h.id !== id);
+                renderHistoryList(cachedHistory);
+                showToast('Deleted decision record');
+            } catch (err) {
+                showToast('Delete failed', true);
+            }
+        }
+
+        async function clearAllHistory() {
+            if (!confirm('Are you sure you want to delete ALL decision history?')) return;
+            try {
+                await fetch('/history/clear', { method: 'DELETE' });
+                cachedHistory = [];
+                renderHistoryList([]);
+                showToast('Cleared all history');
+            } catch (err) {
+                showToast('Clear failed', true);
+            }
+        }
+
+        // Auto-submit on page load if there's a question
+        window.addEventListener('DOMContentLoaded', function() {
+            const problemInput = document.getElementById('problem');
+            if (problemInput && problemInput.value.trim()) {
+                problemInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

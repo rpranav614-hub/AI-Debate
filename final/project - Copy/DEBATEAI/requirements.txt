@@ -1,0 +1,31 @@
+# Core
+python-dotenv==1.0.0
+pydantic==2.8.0
+pydantic-settings==2.8.0
+
+# LangChain & LangGraph (without chromadb)
+langchain==0.3.0
+langgraph==0.2.40
+langchain-openai==0.3.0
+langchain-community==0.3.0
+langchain-groq==0.3.0
+
+# Skip chromadb – install only what's needed
+sentence-transformers==2.3.0
+langchain-chroma==0.1.4
+
+# API
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+httpx==0.26.0
+
+# Utilities
+tiktoken==0.7.0
+tenacity==8.2.3
+pyyaml==6.0.1
+
+# File parsing (the feature you want)
+PyPDF2==3.0.1
+python-docx==1.1.0
+Pillow==10.1.0
+pytesseract==0.3.10python-multipart==0.0.9
